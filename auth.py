@@ -15,7 +15,7 @@ siswa_collection = db["siswa_data"]
 # Username Owner untuk operasi CRUD : owner
 # Password Owner : ownerpassword
 
-SECRET_KEY = "c4a490cc9f7a0f72d3e20810df49f7848d51398a6bab95105241e1ec544e9587"
+SECRET_KEY = "082293011deef0c73bf84d15a5b9e806498897df"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
