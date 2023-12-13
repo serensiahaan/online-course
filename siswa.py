@@ -46,12 +46,24 @@ async def read_siswa(siswa_id: int, current_user: auth.User = Depends(check_owne
     raise HTTPException(status_code=404, detail=f'Siswa with ID {siswa_id} not found')
 
 @router.post('/siswa', response_model=Siswa)
-async def add_siswa(siswa: Siswa, current_user: auth.User = Depends(check_owner_permissions)):
-    existing_siswa = siswa_collection.find_one({"pendaftaran_id": siswa.pendaftaran_id})
-    if existing_siswa:
-        raise HTTPException(status_code=400, detail=f"Siswa for Pendaftaran ID '{siswa.pendaftaran_id}' already exists.")
+async def add_siswa(pendaftaran_id: int, current_user: auth.User = Depends(check_owner_permissions)):
+    pendaftaran = pendaftaran_collection.find_one({"pendaftaran_id": pendaftaran_id})
+    if not pendaftaran:
+        raise HTTPException(status_code=404, detail=f"Pendaftaran with ID '{pendaftaran_id}' not found.")
     
-    inserted_id = siswa_collection.insert_one(siswa.dict()).inserted_id
+    last_siswa = siswa_collection.find_one(sort=[("siswa_id", -1)])
+    new_siswa_id = 1 if not last_siswa else last_siswa["siswa_id"] + 1
+    
+    siswa_data = {
+        "siswa_id": new_siswa_id,
+        "nama": pendaftaran["nama"],
+        "sekolah": pendaftaran["sekolah"],
+        "kelas": pendaftaran["kelas"],
+        "subject": pendaftaran["subject"],
+        "day": pendaftaran["day"],
+    }
+    
+    inserted_id = siswa_collection.insert_one(siswa_data).inserted_id
     if inserted_id:
         new_siswa = siswa_collection.find_one({"_id": inserted_id})
         return convert_id(new_siswa)

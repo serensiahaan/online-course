@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from pymongo import MongoClient
 import auth
 
-app = APIRouter()
+router = APIRouter()
 
 client = MongoClient("mongodb+srv://owner:owner@onlinecourse.uzzj2ih.mongodb.net/")
 db = client["onlinecourse"]
@@ -26,12 +26,12 @@ def check_owner_permissions(current_user: auth.User = Depends(auth.get_current_a
     if current_user.role != "owner":
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-@app.get('/kelas')
+@router.get('/kelas')
 async def read_all_kelas(current_user: auth.User = Depends(auth.get_current_active_user)):
     auth.check_owner_permissions(current_user)
     return list(map(convert_id, kelas_collection.find()))
 
-@app.get('/kelas/{kelas_id}')
+@router.get('/kelas/{kelas_id}')
 async def read_kelas(kelas_id: int, current_user: auth.User = Depends(auth.get_current_active_user)):
     auth.check_owner_permissions(current_user)
     kelas = kelas_collection.find_one({"id": kelas_id})
@@ -39,7 +39,7 @@ async def read_kelas(kelas_id: int, current_user: auth.User = Depends(auth.get_c
         return convert_id(kelas)
     raise HTTPException(status_code=404, detail=f'Class with ID {kelas_id} not found')
 
-@app.post('/kelas')
+@router.post('/kelas')
 async def create_kelas(kelas: Kelas, current_user: auth.User = Depends(auth.get_current_active_user)):
     auth.check_owner_permissions(current_user)
     kelas_dict = kelas.dict()
@@ -59,7 +59,7 @@ async def create_kelas(kelas: Kelas, current_user: auth.User = Depends(auth.get_
 
     raise HTTPException(status_code=404, detail='Failed to add class')
 
-@app.put('/kelas/{kelas_id}')
+@router.put('/kelas/{kelas_id}')
 async def update_kelas(kelas_id: int, kelas: Kelas, current_user: auth.User = Depends(auth.get_current_active_user)):
     auth.check_owner_permissions(current_user)
     kelas_dict = kelas.dict()
@@ -78,7 +78,7 @@ async def update_kelas(kelas_id: int, kelas: Kelas, current_user: auth.User = De
 
     return "Class not found."
 
-@app.delete('/kelas/{kelas_id}')
+@router.delete('/kelas/{kelas_id}')
 async def delete_kelas(kelas_id: int, current_user: auth.User = Depends(auth.get_current_active_user)):
     auth.check_owner_permissions(current_user)
     result = kelas_collection.delete_one({"id": kelas_id})
